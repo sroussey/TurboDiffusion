@@ -25,7 +25,6 @@ import argparse
 import math
 import os
 import sys
-import types
 
 # Add parent directory to path so rcm/imaginaire imports work when running
 # from the inference/ directory (matches convention of other inference scripts).
@@ -34,28 +33,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
-# Guard imports that may fail on Mac / CPU-only installs due to missing
-# distributed modules (torch.distributed._composable.fsdp, etc.).
-# We stub only the *exact* missing leaf modules so we don't interfere
-# with torch._dynamo internals that also import from torch.distributed.
-_STUBS_TO_ADD = {
-    "torch.distributed._composable.fsdp": {"fully_shard": None},
-}
-for _mod_name, _attrs in _STUBS_TO_ADD.items():
-    parts = _mod_name.split(".")
-    # Ensure every parent package exists in sys.modules as a stub
-    for i in range(len(parts)):
-        parent = ".".join(parts[: i + 1])
-        if parent not in sys.modules:
-            _stub = types.ModuleType(parent)
-            _stub.__path__ = []  # mark as package so sub-imports work
-            sys.modules[parent] = _stub
-    # Add the expected attributes to the leaf stub
-    leaf = sys.modules[_mod_name]
-    for attr_name, attr_val in _attrs.items():
-        if not hasattr(leaf, attr_name):
-            setattr(leaf, attr_name, attr_val)
 
 from rcm.networks.wan2pt1 import (
     WanModel,
@@ -390,9 +367,6 @@ def export_onnx(args):
     print(f"Forward pass OK. Output shape: {list(test_out.shape)}")
 
     print(f"Exporting to ONNX: {args.output} (opset {args.opset})")
-    # Use dynamo=False for the legacy TorchScript tracer.  The new dynamo-based
-    # exporter (default in PyTorch 2.11+) pulls in torch._dynamo which imports
-    # FSDP/distributed internals that fail on Mac/CPU-only installs.
     with torch.no_grad():
         torch.onnx.export(
             model,
@@ -408,7 +382,6 @@ def export_onnx(args):
             },
             opset_version=args.opset,
             do_constant_folding=True,
-            dynamo=False,
         )
 
     print(f"Exported: {args.output}")
