@@ -4,7 +4,7 @@
   "features": {
     "ghcr.io/devcontainers/features/git:1": {}
   },
-  "postCreateCommand": "pip install einops loguru safetensors pynvml imageio[ffmpeg] onnx onnxscript onnxruntime",
+  "postCreateCommand": "pip install einops loguru safetensors pynvml onnx onnxscript onnxruntime",
   "customizations": {
     "vscode": {
       "extensions": [

@@ -341,8 +341,11 @@ def export_onnx(args):
         base_model = select_model(args.model)
 
     print(f"Loading checkpoint: {args.dit_path}")
-    from rcm.utils.model_utils import load_state_dict
-    state_dict = load_state_dict(args.dit_path)
+    if args.dit_path.endswith(".safetensors"):
+        from safetensors.torch import load_file
+        state_dict = load_file(args.dit_path)
+    else:
+        state_dict = torch.load(args.dit_path, map_location="cpu", weights_only=False)
     base_model.load_state_dict(state_dict, assign=True)
     del state_dict
 
