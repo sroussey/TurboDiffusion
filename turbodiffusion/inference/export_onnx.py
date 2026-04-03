@@ -44,7 +44,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from rcm.utils.model_utils import load_state_dict
 from rcm.networks.wan2pt1 import (
     WanModel,
     WanSelfAttention,
@@ -352,6 +351,7 @@ def export_onnx(args):
         base_model = select_model(args.model)
 
     print(f"Loading checkpoint: {args.dit_path}")
+    from rcm.utils.model_utils import load_state_dict
     state_dict = load_state_dict(args.dit_path)
     base_model.load_state_dict(state_dict, assign=True)
     del state_dict
