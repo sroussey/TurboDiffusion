@@ -1,10 +1,10 @@
 {
   "name": "TurboDiffusion",
-  "image": "nvcr.io/nvidia/pytorch:25.04-py3",
+  "image": "pytorch/pytorch:2.7.0-cuda12.6-cudnn9-devel",
   "features": {
     "ghcr.io/devcontainers/features/git:1": {}
   },
-  "postCreateCommand": "pip install -e '.[dev]' && pip install onnx onnxscript onnxruntime-gpu",
+  "postCreateCommand": "pip install einops loguru safetensors pynvml imageio[ffmpeg] onnx onnxscript onnxruntime",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -14,7 +14,6 @@
     }
   },
   "runArgs": [
-    "--gpus=all",
     "--shm-size=16g"
   ]
 }
