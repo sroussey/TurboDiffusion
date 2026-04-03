@@ -14,3 +14,7 @@ checkpoints/
 # outputs
 output*/
 *.mp4
+
+# ONNX exports (too large for git, use LFS or external hosting)
+*.onnx
+*.onnx.data
