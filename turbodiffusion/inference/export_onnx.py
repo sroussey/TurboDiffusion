@@ -6,8 +6,8 @@ Creates an ONNX-exportable wrapper that replaces non-traceable operations
 dynamic tensor creation) with pure PyTorch equivalents that survive
 torch.onnx.export tracing.
 
-Usage:
-    python export_onnx.py --model Wan2.1-1.3B --dit_path checkpoints/model.pth --output model.onnx
+Usage (from turbodiffusion/inference/):
+    python export_onnx.py --model Wan2.1-1.3B --dit_path ../../checkpoints/model.pth --output model.onnx
 
 The exported model expects FIXED spatial dimensions (set at export time via
 --num_frames, --height, --width). The batch dimension is dynamic.
@@ -23,7 +23,13 @@ Output:
 
 import argparse
 import math
+import os
+import sys
 import types
+
+# Add parent directory to path so rcm/imaginaire imports work when running
+# from the inference/ directory (matches convention of other inference scripts).
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import torch
 import torch.nn as nn
