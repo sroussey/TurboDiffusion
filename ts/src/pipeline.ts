@@ -24,6 +24,12 @@ export interface PipelineConfig {
    * If omitted, you must pass pre-computed embeddings to generate().
    */
   t5Path?: string;
+  /**
+   * HuggingFace model ID for the tokenizer. Default: "google/umt5-xxl".
+   * Use "Xenova/flan-t5-xxl" to test with a smaller/public T5-XXL variant
+   * (same 4096 hidden dim, different training data).
+   */
+  tokenizerModel?: string;
   /** ONNX Runtime execution provider. Default: 'cpu'. Set 'cuda' for GPU. */
   device?: "cpu" | "cuda";
 }
@@ -83,8 +89,9 @@ export class TurboDiffusionPipeline {
     if (this.config.t5Path) {
       console.log("Loading T5 encoder...");
       this.t5Session = await ort.InferenceSession.create(this.config.t5Path, opts);
-      console.log("Loading tokenizer (google/umt5-xxl)...");
-      this.tokenizer = await AutoTokenizer.from_pretrained("google/umt5-xxl");
+      const tokenizerModel = this.config.tokenizerModel ?? "google/umt5-xxl";
+      console.log(`Loading tokenizer (${tokenizerModel})...`);
+      this.tokenizer = await AutoTokenizer.from_pretrained(tokenizerModel);
     }
 
     console.log("Pipeline ready.");
