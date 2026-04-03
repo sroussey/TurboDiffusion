@@ -346,8 +346,19 @@ def export_onnx(args):
         state_dict = load_file(args.dit_path)
     else:
         state_dict = torch.load(args.dit_path, map_location="cpu", weights_only=False)
-    base_model.load_state_dict(state_dict, assign=True)
-    del state_dict
+
+    # Clean up state dict keys:
+    # 1. Strip "_checkpoint_wrapped_module." prefix added by checkpoint_wrapper during training
+    # 2. Drop SLA proj_l weights (from Sparse-Linear Attention) — we use standard SDPA
+    cleaned = {}
+    for k, v in state_dict.items():
+        k = k.replace("_checkpoint_wrapped_module.", "")
+        if "attn_op.local_attn.proj_l" in k:
+            continue
+        cleaned[k] = v
+
+    base_model.load_state_dict(cleaned, assign=True)
+    del state_dict, cleaned
 
     base_model = base_model.to(device=device, dtype=dtype).eval()
 
